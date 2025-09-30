@@ -1,0 +1,11 @@
+{
+    "mcpServers": {
+        "xiaohongshu-mcp": {
+            "type": "sse",
+            "url": "http://localhost:18060/mcp",
+            "fromGalleryId": "modelcontextprotocol.servers_xiaohongshu-mcp",
+            "description": "小红书MCP工具 - 连接到本地服务器",
+            "timeout": 30000
+        }
+    }
+}

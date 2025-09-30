@@ -448,6 +448,71 @@ claude mcp list
 ### 2.2. 支持的客户端
 
 <details>
+<summary><b>Trae IDE</b></summary>
+
+Trae 是一个现代化的 AI 驱动 IDE，原生支持 MCP 协议。
+
+#### 快速安装
+
+使用我们提供的一键安装脚本：
+
+```powershell
+# 下载并运行安装脚本
+.\quick-install.ps1
+```
+
+#### 手动配置
+
+**1. 创建配置目录**
+```powershell
+New-Item -ItemType Directory -Path ".\.trae" -Force
+```
+
+**2. 创建 MCP 配置文件**
+在 `.trae/mcp.json` 中添加以下内容：
+
+```json
+{
+  "mcpServers": {
+    "xiaohongshu-mcp": {
+      "type": "sse",
+      "url": "http://localhost:18060/mcp",
+      "fromGalleryId": "modelcontextprotocol.servers_xiaohongshu-mcp"
+    }
+  }
+}
+```
+
+**3. 启动服务**
+```powershell
+.\xiaohongshu-mcp.exe -headless=false
+```
+
+#### 使用示例
+
+在 Trae 中可以直接使用 MCP 工具：
+
+```javascript
+// 搜索内容
+const result = await mcp_xiaohongshu_mcp_search_feeds({ keyword: "美食" });
+
+// 发布图文
+const publishResult = await mcp_xiaohongshu_mcp_publish_content({
+    title: "我的分享",
+    content: "这是内容描述",
+    images: ["./image.jpg"],
+    tags: ["美食", "分享"]
+});
+```
+
+#### 详细文档
+
+- [Trae 安装指南](./TRAE_INSTALLATION.md)
+- [Trae 使用示例](./TRAE_USAGE_EXAMPLES.md)
+
+</details>
+
+<details>
 <summary><b>Claude Code CLI</b></summary>
 
 官方命令行工具，已在上面快速开始部分展示：
