@@ -1,0 +1,46 @@
+{
+  "dify_mcp_configuration": {
+    "server_endpoint": "https://xiaohongshu-mcp-test.loca.lt/mcp",
+    "server_name": "小红书 MCP 服务",
+    "server_icon": "🔴",
+    "server_identifier": "xiaohongshu-mcp",
+    "timeout": 30,
+    "request_headers": {
+      "Content-Type": "application/json",
+      "Accept": "application/json, text/event-stream"
+    }
+  },
+  "connection_status": {
+    "status": "✅ 已切换到LocalTunnel",
+    "issue_resolved": "已切换到LocalTunnel解决双层路由器网络问题",
+    "last_test": "2025-09-30T15:35:00Z",
+    "test_result": "MCP 初始化成功"
+  },
+  "test_endpoints": {
+    "health_check": "https://xiaohongshu-mcp-test.loca.lt/health",
+    "mcp_endpoint": "https://xiaohongshu-mcp-test.loca.lt/mcp"
+  },
+  "tunnel_config": {
+    "tunnel_type": "LocalTunnel",
+    "local_service_port": "18060",
+    "proxy_port": "8080",
+    "tunnel_url": "https://xiaohongshu-mcp-test.loca.lt"
+  },
+  "available_tools": [
+    "mcp_xiaohongshu-mcp_check_login_status",
+    "mcp_xiaohongshu-mcp_get_login_qrcode", 
+    "mcp_xiaohongshu-mcp_list_feeds",
+    "mcp_xiaohongshu-mcp_get_feed_detail",
+    "mcp_xiaohongshu-mcp_post_comment_to_feed",
+    "mcp_xiaohongshu-mcp_publish_content",
+    "mcp_xiaohongshu-mcp_publish_with_video",
+    "mcp_xiaohongshu-mcp_search_feeds",
+    "mcp_xiaohongshu-mcp_user_profile"
+  ],
+  "notes": {
+    "connection_fixed": "✅ 连接问题已修复 - 使用LocalTunnel (127.0.0.1:18060)",
+    "tunnel_status": "LocalTunnel 地址: https://xiaohongshu-mcp-test.loca.lt",
+    "headers_required": "必须包含 Content-Type 和 Accept 头部",
+    "initialization": "Dify 会自动处理 MCP 初始化流程，LocalTunnel提供稳定的外网访问"
+  }
+}

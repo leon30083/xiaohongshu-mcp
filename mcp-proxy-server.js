@@ -21,21 +21,23 @@ app.get('/health', (req, res) => {
 
 // 代理所有MCP请求到本地
 app.use('/mcp', createProxyMiddleware({
-    target: LOCAL_MCP_URL,
+    target: 'http://127.0.0.1:18060',  // 强制使用 IPv4
     changeOrigin: true,
     pathRewrite: {
         '^/mcp': '/mcp'
     },
+    timeout: 30000,  // 30秒超时
+    proxyTimeout: 30000,
     onError: (err, req, res) => {
         console.error('代理错误:', err.message);
         res.status(500).json({
             error: '本地MCP服务不可用',
             message: err.message,
-            target: LOCAL_MCP_URL
+            target: 'http://127.0.0.1:18060'
         });
     },
     onProxyReq: (proxyReq, req, res) => {
-        console.log(`代理请求: ${req.method} ${req.url} -> ${LOCAL_MCP_URL}${req.url}`);
+        console.log(`代理请求: ${req.method} ${req.url} -> http://127.0.0.1:18060${req.url}`);
     }
 }));
 
