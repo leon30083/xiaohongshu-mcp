@@ -1,0 +1,155 @@
+version: '3.8'
+
+services:
+  xiaohongshu-mcp:
+    image: xpzouying/xiaohongshu-mcp:latest
+    container_name: xiaohongshu-mcp
+    restart: unless-stopped
+    tty: true
+    
+    # Security: Run as non-root user
+    user: "1000:1000"
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
+    
+    # Volume mounts
+    volumes:
+      - ./data:/app/data
+      - ./images:/app/images
+      - ./logs:/app/logs
+      - /etc/localtime:/etc/localtime:ro
+    
+    # Environment variables
+    environment:
+      - ROD_BROWSER_BIN=/usr/bin/google-chrome
+      - COOKIES_PATH=/app/data/cookies.json
+      - LOG_LEVEL=info
+      - TZ=Asia/Shanghai
+      # Chrome optimization for production
+      - CHROME_ARGS=--no-sandbox --disable-dev-shm-usage --disable-gpu --disable-web-security --disable-features=VizDisplayCompositor
+    
+    # Network configuration
+    ports:
+      - "127.0.0.1:18060:18060"  # Only bind to localhost for security
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:18060/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "5"
+    
+    # Security options
+    security_opt:
+      - no-new-privileges:true
+    
+    # Read-only root filesystem (except for specific writable directories)
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/tmp
+    
+    # Network configuration
+    networks:
+      - xiaohongshu-net
+
+  # Optional: Nginx reverse proxy
+  nginx:
+    image: nginx:alpine
+    container_name: xiaohongshu-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./logs/nginx:/var/log/nginx
+    depends_on:
+      - xiaohongshu-mcp
+    networks:
+      - xiaohongshu-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Optional: Redis for session storage
+  redis:
+    image: redis:7-alpine
+    container_name: xiaohongshu-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-changeme}
+    volumes:
+      - ./redis-data:/data
+    networks:
+      - xiaohongshu-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Optional: Monitoring with Prometheus
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: xiaohongshu-prometheus
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    networks:
+      - xiaohongshu-net
+
+  # Optional: Grafana for visualization
+  grafana:
+    image: grafana/grafana:latest
+    container_name: xiaohongshu-grafana
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    networks:
+      - xiaohongshu-net
+
+networks:
+  xiaohongshu-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  prometheus-data:
+  grafana-data:
